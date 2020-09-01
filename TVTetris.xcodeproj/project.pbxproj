@@ -8,20 +8,17 @@
 
 /* Begin PBXBuildFile section */
 		9430DF8024FDD4C6007359DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9430DF7F24FDD4C6007359DB /* AppDelegate.swift */; };
-		9430DF8224FDD4C6007359DB /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 9430DF8124FDD4C6007359DB /* GameScene.sks */; };
 		9430DF8424FDD4C6007359DB /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = 9430DF8324FDD4C6007359DB /* Actions.sks */; };
 		9430DF8624FDD4C6007359DB /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9430DF8524FDD4C6007359DB /* GameScene.swift */; };
 		9430DF8824FDD4C6007359DB /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9430DF8724FDD4C6007359DB /* GameViewController.swift */; };
 		9430DF8B24FDD4C6007359DB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9430DF8924FDD4C6007359DB /* Main.storyboard */; };
 		9430DF8D24FDD4CD007359DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9430DF8C24FDD4CD007359DB /* Assets.xcassets */; };
 		9430DF9024FDD4CD007359DB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9430DF8E24FDD4CD007359DB /* LaunchScreen.storyboard */; };
-		9430DF9824FDF87F007359DB /* Tetris.sks in Resources */ = {isa = PBXBuildFile; fileRef = 9430DF9724FDF87F007359DB /* Tetris.sks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		9430DF7C24FDD4C6007359DB /* TVTetris.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TVTetris.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9430DF7F24FDD4C6007359DB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		9430DF8124FDD4C6007359DB /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
 		9430DF8324FDD4C6007359DB /* Actions.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Actions.sks; sourceTree = "<group>"; };
 		9430DF8524FDD4C6007359DB /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		9430DF8724FDD4C6007359DB /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
@@ -29,7 +26,6 @@
 		9430DF8C24FDD4CD007359DB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9430DF8F24FDD4CD007359DB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9430DF9124FDD4CD007359DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9430DF9724FDF87F007359DB /* Tetris.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Tetris.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,8 +59,6 @@
 			isa = PBXGroup;
 			children = (
 				9430DF7F24FDD4C6007359DB /* AppDelegate.swift */,
-				9430DF8124FDD4C6007359DB /* GameScene.sks */,
-				9430DF9724FDF87F007359DB /* Tetris.sks */,
 				9430DF8324FDD4C6007359DB /* Actions.sks */,
 				9430DF8524FDD4C6007359DB /* GameScene.swift */,
 				9430DF8724FDD4C6007359DB /* GameViewController.swift */,
@@ -135,8 +129,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9430DF8B24FDD4C6007359DB /* Main.storyboard in Resources */,
-				9430DF8224FDD4C6007359DB /* GameScene.sks in Resources */,
-				9430DF9824FDF87F007359DB /* Tetris.sks in Resources */,
 				9430DF8D24FDD4CD007359DB /* Assets.xcassets in Resources */,
 				9430DF9024FDD4CD007359DB /* LaunchScreen.storyboard in Resources */,
 				9430DF8424FDD4C6007359DB /* Actions.sks in Resources */,
