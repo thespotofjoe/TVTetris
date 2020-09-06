@@ -19,13 +19,39 @@ enum TileType
     case long_tile
     case t_tile
     case background
+    
+    static func random() -> TileType
+    {
+        switch Int.random(in: 1...7)
+        {
+        case 1:
+            return TileType.s_tile
+        case 2:
+            return TileType.backwards_s_tile
+        case 3:
+            return TileType.l_tile
+        case 4:
+            return TileType.backwards_l_tile
+        case 5:
+            return TileType.square_tile
+        case 6:
+            return TileType.long_tile
+        case 7:
+            return TileType.t_tile
+        default:
+            break
+        }
+        
+        // Shouldn't get here but just to make the compiler happy
+        return TileType.background
+    }
 }
 
 // Class to do all the game logic and hold all the game data.
 class TetrisGame
 {
     private var alreadyInstantiated = false
-    private var gameGrid: [[TileType]]? = nil
+    private var gameGrid: [[TileType]] = [[]]
     private var pieces: [TetrisPiece] = []
     
     // Holds actively falling piece if there is one. Nil if not.
@@ -39,37 +65,60 @@ class TetrisGame
         }
         
         alreadyInstantiated = true
-        resetGameGrid()
+        resetGameGrid(firstRun: true)
     }
     
-    func resetGameGrid()
+    func resetGameGrid(firstRun: Bool)
     {
-        var resetRow: [TileType]
+        var resetRow: [TileType] = []
         for _ in 1...10
         {
             resetRow.append(.background)
         }
-        for _ in 1...18
+        
+        gameGrid[0] = resetRow
+        for i in 1..<18
         {
-            gameGrid!.append(resetRow)
+            if firstRun
+            {
+                gameGrid.append(resetRow)
+            } else {
+                gameGrid[i] = resetRow
+            }
         }
     }
     
     func getGameGrid() -> [[TileType]]
     {
-        
+        return gameGrid
     }
     
     // Moves currently active piece down 1.
     func movePieceDown()
     {
+        print("Attempting to move active piece down")
         
+        if let activePiece = self.activePiece
+        {
+            // Erase square from grid so we don't have old ghost squares
+            for square in activePiece.getSquares()
+            {
+                gameGrid[square.getRow()][square.getColumn()] = .background
+            }
+            
+            //print("In Tetris Game. There is an active piece. Running activePiece.moveDown() shortly:")
+            // Move the piece down
+            activePiece.moveDown()
+            //print("In Tetris Game. Ran activePiece.moveDown() successfully")
+            // Add piece back to gameGrid in the new position
+            updateGameGrid()
+        }
     }
     
     // Function to check if a piece has landed or is still falling.
     func checkIfLanded() -> Bool
     {
-        
+        return false
     }
     
     // Function to check if a row is completed.
@@ -92,35 +141,142 @@ class TetrisGame
     {
         
     }
+    
+    // Adds tile, sets to active
+    func spawnPiece()
+    {
+        let newPiece = TetrisPiece(type: TileType.random())
+        activePiece = newPiece
+        pieces.append(newPiece)
+        updateGameGrid()
+    }
+    
+    // Updates gameGrid to include new piece
+    func updateGameGrid()
+    {
+        for index in activePiece!.getIndeces()
+        {
+            gameGrid[index[0]][index[1]] = activePiece!.getType()
+        }
+    }
+    
+    // Gets indeces of activePiece
+    func getActivePieceIndeces() -> [[Int]]
+    {
+        if let activePiece = self.activePiece
+        {
+            return activePiece.getIndeces()
+        }
+        
+        return [[0,0]]
+    }
+    
+    // Getter for activePiece
+    func getActivePiece() -> TetrisPiece?
+    {
+        return activePiece
+    }
 }
 
 class TetrisPiece
 {
-    private var squares: [Square]
+    private var squares: [Square] = []
+    private var type: TileType
+    private var isActive = true
     
-    init (squares: [Square])
+    init (squares: [Square], type: TileType)
     {
         self.squares = squares
+        self.type = type
     }
     
-    func getSquares() -> [Square]
+    init (type: TileType, startColumn: Int, startRow: Int)
     {
-        return squares
+        self.type = type
+        
+        var moves: [[Int]] = [[]]
+        
+        // Initializing only for compiler happiness. It doesn't understand it's initialized in switch
+        //var tileGroup: SKTileGroup = tileGroups["T Tile"]!
+        
+        switch (type)
+        {
+        case TileType.s_tile:
+            moves = [[-1, 0], [0, 1], [-1, 0]]
+            //tileGroup = tileGroups["S Tile"]!
+            
+        case TileType.backwards_s_tile:
+            moves = [[-1, 0], [0, -1], [-1, 0]]
+            //tileGroup = tileGroups["Backward S Tile"]!
+            
+        case TileType.l_tile:
+            moves = [[-1, 0], [-1, 0], [0, 1]]
+            //tileGroup = tileGroups["L Tile"]!
+            
+        case TileType.backwards_l_tile:
+            moves = [[-1, 0], [-1, 0], [0, -1]]
+            //tileGroup = tileGroups["Backward L Tile"]!
+            
+        case TileType.square_tile:
+            moves = [[0, 1], [-1, 0], [0, -1]]
+            //tileGroup = tileGroups["Square Tile"]!
+            
+        case TileType.long_tile:
+            moves = [[-1, 0], [-1, 0], [-1, 0]]
+            //tileGroup = tileGroups["Long Tile"]!
+            
+        case TileType.t_tile:
+            moves = [[-1, 0], [0, 1], [-1, -1]]
+            //tileGroup = tileGroups["T Tile"]!
+        default:
+            // It'll never get here but the compiler must be happy
+            break
+        }
+        
+        var column = startColumn - 1
+        var row = startRow - 1
+        
+        var indeces = [[row, column]]
+        
+        for move in moves
+        {
+            column += move[1]
+            row += move[0]
+            indeces.append([row, column])
+        }
+        
+        for index in indeces
+        {
+            squares.append(Square(row: index[0], column: index[1], type: type))
+        }
     }
     
-    // Moves all the squares in this piece down one, if possible.
-    func moveDown()
+    // convenience init for a tile at the startline
+    convenience init (type: TileType)
+    {
+        self.init(type: type, startColumn: 5, startRow: 18)
+    }
+    
+    // Moves all the squares in this piece down one, if possible. Returns whether it's active or not after moving down.
+    func moveDown() -> Bool
     {
         for square in squares
         {
-            // TODO check for collisions with previously dropped tiles
-            square.moveDown()
+            // Move square down, and if it's stopped (returns true) we set the current tile to inactive
+            print("In TetrisPiece. About to call square.moveDown()")
+            if !square.moveDown()
+            {
+                isActive = false
+            }
+            print("In TetrisPiece. Successfully ran square.moveDown()")
         }
+        
+        return isActive
     }
     
     func deleteRow(_ row: Int)
     {
-        var indecesToDelete: [Int]
+        var indecesToDelete: [Int] = []
         
         for i in 0..<squares.count
         {
@@ -146,15 +302,38 @@ class TetrisPiece
             }
         }
     }
+    
+    func getSquares() -> [Square]
+    {
+        return squares
+    }
+    
+    func getIndeces() -> [[Int]]
+    {
+        var indeces: [[Int]] = [[squares[0].getRow(), squares[0].getColumn()]]
+        for i in 1..<4
+        {
+            let square = squares[i]
+            print("Getting Indeces: row: \(square.getRow()), \(square.getColumn())")
+            indeces.append([square.getRow(), square.getColumn()])
+        }
+        
+        return indeces
+    }
+    
+    func getType() -> TileType
+    {
+        return type
+    }
 }
 
 class Square
 {
     private var row: Int
     private var column: Int
-    private var type: SKTileGroup
+    private var type: TileType
     
-    init (row: Int, column: Int, type: SKTileGroup)
+    init (row: Int, column: Int, type: TileType)
     {
         self.row = row
         self.column = column
@@ -171,7 +350,7 @@ class Square
         return column
     }
     
-    func getType() -> SKTileGroup
+    func getType() -> TileType
     {
         return type
     }
@@ -187,15 +366,22 @@ class Square
         return false
     }
     
-    // Moves the square down one row if possible.
-    func moveDown()
+    // Moves the square down one row if possible, returns whether it's still active or not after moving
+    func moveDown(/*gameGrid: [[TileType]]*/) -> Bool
     {
+        print("In Square.moveDown() about to actually move down. Row: \(row).")
+        // If we're on the bottom row, return not possible to move down further
         if row == 0
         {
-            return
-        }
+            print("In Square.moveDown(). Row is 0, unable to move down. Row: \(row).")
+            return false
+        } /*else if gameGrid[row][column] != .background {    // Or if there is a tile piece below it, return false
+            return false
+        }*/
         
         row -= 1
+        print("In Square.moveDown(). Moved down. Row: \(row).")
+        return true
     }
 }
 
@@ -206,7 +392,7 @@ class GameScene: SKScene {
     private var tileGrid: [[SKTileGroup]] = [[]]
     private var tileGroups: [String : SKTileGroup] = [:]
     private var bgRow: [SKTileGroup] = []
-    private var game: TetrisGame? = nil
+    private var game = TetrisGame()
     
     /* Overridden system functions */
     override func didMove(to view: SKView)
@@ -288,6 +474,8 @@ class GameScene: SKScene {
         }
         
         grid!.fill(with: bgGroup)
+        
+        run(SKAction.repeatForever(SKAction.sequence([SKAction.run(game.movePieceDown), SKAction.wait(forDuration: 1.0)])))
         print("Should be up and running right now")
     }
     
@@ -315,101 +503,60 @@ class GameScene: SKScene {
     {
         // Called before each frame is rendered
         //spawnTile(column: 5, type: randomTile()!)
+        updateTetrisGrid()
+        displayGrid()
+        //game.movePieceDown()
+        
     }
     
     /* Our functions */
     @objc func pressed()
     {
-        game.resetTileGrid()
-        grid!.fill(with: tileGroups["Background"]!)
-        spawnTile(column: 5, type: randomTile()!)
+        print("Pressed")
+        game.resetGameGrid(firstRun: false)
+        //grid!.fill(with: tileGroups["Background"]!)
+        game.spawnPiece()
+        updateTetrisGrid()
+        displayGrid()
         run(SKAction.repeatForever(SKAction.sequence([SKAction.wait(forDuration: 1.0), SKAction.run(moveDown)])))
     }
     
-    func randomTile() -> TileType?
+    // Function to updates the grid of TileGroups to reflect the gameGrid
+    func updateTetrisGrid()
     {
-        switch Int.random(in: 1...7)
+        let gameGrid = game.getGameGrid()
+        for row in 1...17
         {
-        case 1:
-            return TileType.s_tile
-        case 2:
-            return TileType.backwards_s_tile
-        case 3:
-            return TileType.l_tile
-        case 4:
-            return TileType.backwards_l_tile
-        case 5:
-            return TileType.square_tile
-        case 6:
-            return TileType.long_tile
-        case 7:
-            return TileType.t_tile
-        default:
-            break
+            for column in 1...9
+            {
+                tileGrid[row][column] = groupFromType(gameGrid[row][column])
+            }
         }
-        
-        // Shouldn't get here but just to make the compiler happy
-        return nil
     }
     
-    // Function to update the game grid with the new tilemap
-    func updateTetrisGrid()
+    // Displays grid
+    func displayGrid()
     {
         for row in 1...17
         {
             for column in 1...9
             {
-                print("Updating Tetris Grid. Row: \(row). Column: \(column).")
+                //print("Updating Tetris Grid. Row: \(row). Column: \(column).")
                 grid!.setTileGroup(tileGrid[row][column], forColumn: column, row: row)
             }
         }
     }
     
     // Function to spawn a tile centered around its top-right-most square component.
-    func spawnTile(column: Int, type: TileType)
+    func spawnTile()
     {
-        var moves: [[Int]]
-        var tileGroup: SKTileGroup
+        game.spawnPiece()
         
-        switch (type)
+        let tileGroup: SKTileGroup = groupFromType(game.getActivePiece()!.getType())
+        
+        for index in game.getActivePieceIndeces()
         {
-        case TileType.s_tile:
-            moves = [[0, 0], [0, -1], [1, 0], [0, -1]]
-            tileGroup = tileGroups["S Tile"]!
-            
-        case TileType.backwards_s_tile:
-            moves = [[0, 0], [0, -1], [-1, 0], [0, -1]]
-            tileGroup = tileGroups["Backward S Tile"]!
-            
-        case TileType.l_tile:
-            moves = [[0, 0], [0, -1], [0, -1], [1, 0]]
-            tileGroup = tileGroups["L Tile"]!
-            
-        case TileType.backwards_l_tile:
-            moves = [[0, 0], [0, -1], [0, -1], [-1, 0]]
-            tileGroup = tileGroups["Backward L Tile"]!
-            
-        case TileType.square_tile:
-            moves = [[0, 0], [1, 0], [0, -1], [-1, 0]]
-            tileGroup = tileGroups["Square Tile"]!
-            
-        case TileType.long_tile:
-            moves = [[0, 0], [0, -1], [0, -1], [0, -1]]
-            tileGroup = tileGroups["Long Tile"]!
-            
-        case TileType.t_tile:
-            moves = [[0, 0], [0, -1], [1, 0], [-1, -1]]
-            tileGroup = tileGroups["T Tile"]!
-        }
-        
-        var rowIndex = 17
-        var columnIndex = column - 1
-        
-        for move in moves
-        {
-            rowIndex += move[1]
-            columnIndex += move[0]
-            tileGrid[rowIndex][columnIndex] = tileGroup
+            tileGrid[index[0]][index[1]] = tileGroup
         }
         
         updateTetrisGrid()
@@ -430,13 +577,10 @@ class GameScene: SKScene {
 
     }
     
-    // Function to move tile down once
+    // Function to move tiles down once
     func moveDown()
     {
-        for column in 0...9
-        {
-            if tileGrid[0][column]
-        }
+        
     }
     
     // Function to check for full rows, returns array of full rows
@@ -451,5 +595,41 @@ class GameScene: SKScene {
     func deleteRow(_ row: Int)
     {
         
+    }
+    
+    // Takes TileType and returns associated SKTileGroup
+    func groupFromType(_ type: TileType) -> SKTileGroup
+    {
+        // Initializing only for compiler happiness. It doesn't understand it's initialized in switch
+        var tileGroup = tileGroups["Background"]
+        
+        switch (type)
+        {
+        case TileType.s_tile:
+            tileGroup = tileGroups["S Tile"]!
+            
+        case TileType.backwards_s_tile:
+            tileGroup = tileGroups["Backward S Tile"]!
+            
+        case TileType.l_tile:
+            tileGroup = tileGroups["L Tile"]!
+            
+        case TileType.backwards_l_tile:
+            tileGroup = tileGroups["Backward L Tile"]!
+            
+        case TileType.square_tile:
+            tileGroup = tileGroups["Square Tile"]!
+            
+        case TileType.long_tile:
+            tileGroup = tileGroups["Long Tile"]!
+            
+        case TileType.t_tile:
+            tileGroup = tileGroups["T Tile"]!
+        default:
+            // It'll never get here but the compiler must be happy
+            break
+        }
+        
+        return tileGroup!
     }
 }
