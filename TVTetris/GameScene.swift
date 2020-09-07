@@ -8,6 +8,15 @@
 
 import SpriteKit
 import GameplayKit
+import GameController
+
+enum DPadState {
+    case select
+    case right
+    case left
+    case up
+    case down
+}
 
 enum TileType
 {
@@ -511,10 +520,15 @@ class GameScene: SKScene {
     private var bgRow: [SKTileGroup] = []
     private var game = TetrisGame()
     
+    // Variable to help us detect right and left clicks on the remote
+    private var dPadState: DPadState = .select
+    
     /* Overridden system functions */
     override func didMove(to view: SKView)
     {
-        let press: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.pressed))
+        setUpDirectionalPad()
+        
+        //let press: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.pressed))
         press.allowedPressTypes = [NSNumber(value: UIPress.PressType.select.rawValue)]
         view.addGestureRecognizer(press)
         
@@ -617,6 +631,33 @@ class GameScene: SKScene {
 
     }
     
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        
+        for press in presses {
+            switch press.type {
+            case .select where dPadState == .up:
+                break
+            case .select where dPadState == .down:
+                break
+            case .select where dPadState == .left:
+                //game.moveLeft()
+                break
+            case .select where dPadState == .right:
+                //game.moveRight()
+                break
+            case .select:
+                print("Pressed")
+                //game.resetGameGrid(firstRun: false)
+                game.spawnPiece()
+                updateTetrisGrid()
+                displayGrid()
+                run(SKAction.repeatForever(SKAction.sequence([SKAction.wait(forDuration: 1.0), SKAction.run(moveDown)])))
+            default:
+                super.pressesBegan(presses, with: event)
+            }
+        }
+    }
+    
     override func update(_ currentTime: TimeInterval)
     {
         // Called before each frame is rendered
@@ -628,7 +669,7 @@ class GameScene: SKScene {
     }
     
     /* Our functions */
-    @objc func pressed()
+    /*@objc func pressed()
     {
         print("Pressed")
         //game.resetGameGrid(firstRun: false)
@@ -636,6 +677,33 @@ class GameScene: SKScene {
         updateTetrisGrid()
         displayGrid()
         run(SKAction.repeatForever(SKAction.sequence([SKAction.wait(forDuration: 1.0), SKAction.run(moveDown)])))
+    }*/
+    
+    // Sets up ability to detect directional presses
+    private func setUpDirectionalPad() {
+        guard let controller = GCController.controllers().first else { return }
+        guard let micro = controller.microGamepad else { return }
+        micro.reportsAbsoluteDpadValues = true
+        micro.dpad.valueChangedHandler = {
+            [weak self] (pad, x, y) in
+            
+            let threshold: Float = 0.7
+            if y > threshold {
+                self?.dPadState = .up
+            }
+            else if y < -threshold {
+                self?.dPadState = .down
+            }
+            if x > threshold {
+                self?.dPadState = .left
+            }
+            else if x < -threshold {
+                self?.dPadState = .right
+            }
+            else {
+                self?.dPadState = .select
+            }
+        }
     }
     
     // Function to updates the grid of TileGroups to reflect the gameGrid
