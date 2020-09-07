@@ -98,20 +98,22 @@ class TetrisGame
     {
         print("Attempting to move active piece down")
         
-        if let activePiece = self.activePiece
+        if let unwrappedActivePiece = activePiece
         {
             // Erase square from grid so we don't have old ghost squares
-            for square in activePiece.getSquares()
+            for square in unwrappedActivePiece.getSquares()
             {
-                gameGrid[square.getRow()][square.getColumn()] = .background
+                gameGrid[square.getRowIndex()][square.getColumnIndex()] = .background
             }
             
-            //print("In Tetris Game. There is an active piece. Running activePiece.moveDown() shortly:")
             // Move the piece down
-            activePiece.moveDown()
-            //print("In Tetris Game. Ran activePiece.moveDown() successfully")
+            unwrappedActivePiece.moveDown()
+            
             // Add piece back to gameGrid in the new position
             updateGameGrid()
+            
+            // If the piece is unable to move down further, set it to inactive
+            if !unwrappedActivePiece.canMoveDown() { activePiece = nil }
         }
     }
     
@@ -154,9 +156,12 @@ class TetrisGame
     // Updates gameGrid to include new piece
     func updateGameGrid()
     {
-        for index in activePiece!.getIndeces()
+        if let unwrappedActivePiece = activePiece
         {
-            gameGrid[index[0]][index[1]] = activePiece!.getType()
+            for index in unwrappedActivePiece.getIndeces()
+            {
+                gameGrid[index[0]][index[1]] = unwrappedActivePiece.getType()
+            }
         }
     }
     
@@ -247,7 +252,7 @@ class TetrisPiece
         
         for index in indeces
         {
-            squares.append(Square(row: index[0], column: index[1], type: type))
+            squares.append(Square(rowIndex: index[0], columnIndex: index[1], type: type))
         }
     }
     
@@ -257,21 +262,39 @@ class TetrisPiece
         self.init(type: type, startColumn: 5, startRow: 18)
     }
     
+    // Tells caller whether this tile can move down or not, updates isActive accordingly
+    func canMoveDown() -> Bool
+    {
+        if (isOnBottom()/*||isOnTopOfOtherPiece()*/)
+        {
+            isActive = false
+            return false
+        }
+        
+        return true
+    }
+    
     // Moves all the squares in this piece down one, if possible. Returns whether it's active or not after moving down.
-    func moveDown() -> Bool
+    func moveDown()
     {
         for square in squares
         {
-            // Move square down, and if it's stopped (returns true) we set the current tile to inactive
-            print("In TetrisPiece. About to call square.moveDown()")
-            if !square.moveDown()
+            square.moveDown()
+        }
+    }
+    
+    // Returns true if any of the squares in this piece are in the bottom row
+    func isOnBottom() -> Bool
+    {
+        for square in squares
+        {
+            if square.isOnBottom()
             {
-                isActive = false
+                return true
             }
-            print("In TetrisPiece. Successfully ran square.moveDown()")
         }
         
-        return isActive
+        return false
     }
     
     func deleteRow(_ row: Int)
@@ -281,13 +304,13 @@ class TetrisPiece
         for i in 0..<squares.count
         {
             // Note the squares to be deleted
-            if squares[i].containsRow(row)
+            if squares[i].containsRowIndex(row)
             {
                 indecesToDelete.append(i)
             }
             
             // Move all squares above the deleted row down one.
-            if squares[i].getRow() > row
+            if squares[i].getRowIndex() > row
             {
                 squares[i].moveDown()
             }
@@ -310,12 +333,13 @@ class TetrisPiece
     
     func getIndeces() -> [[Int]]
     {
-        var indeces: [[Int]] = [[squares[0].getRow(), squares[0].getColumn()]]
+        print("Getting Indeces: row: \(squares[0].getRowIndex()), \(squares[0].getColumnIndex())")
+        var indeces: [[Int]] = [[squares[0].getRowIndex(), squares[0].getColumnIndex()]]
         for i in 1..<4
         {
             let square = squares[i]
-            print("Getting Indeces: row: \(square.getRow()), \(square.getColumn())")
-            indeces.append([square.getRow(), square.getColumn()])
+            print("Getting Indeces: row: \(square.getRowIndex()), \(square.getColumnIndex())")
+            indeces.append([square.getRowIndex(), square.getColumnIndex()])
         }
         
         return indeces
@@ -329,25 +353,25 @@ class TetrisPiece
 
 class Square
 {
-    private var row: Int
-    private var column: Int
+    private var rowIndex: Int
+    private var columnIndex: Int
     private var type: TileType
     
-    init (row: Int, column: Int, type: TileType)
+    init (rowIndex: Int, columnIndex: Int, type: TileType)
     {
-        self.row = row
-        self.column = column
+        self.rowIndex = rowIndex
+        self.columnIndex = columnIndex
         self.type = type
     }
     
-    func getRow() -> Int
+    func getRowIndex() -> Int
     {
-        return row
+        return rowIndex
     }
     
-    func getColumn() -> Int
+    func getColumnIndex() -> Int
     {
-        return column
+        return columnIndex
     }
     
     func getType() -> TileType
@@ -356,9 +380,9 @@ class Square
     }
     
     // If this square is in that row, return true. Otherwise return false.
-    func containsRow(_ row:Int) -> Bool
+    func containsRowIndex(_ rowIndex:Int) -> Bool
     {
-        if self.row == row
+        if self.rowIndex == rowIndex
         {
             return true
         }
@@ -366,22 +390,23 @@ class Square
         return false
     }
     
-    // Moves the square down one row if possible, returns whether it's still active or not after moving
-    func moveDown(/*gameGrid: [[TileType]]*/) -> Bool
+    func canMoveDown() -> Bool
     {
-        print("In Square.moveDown() about to actually move down. Row: \(row).")
-        // If we're on the bottom row, return not possible to move down further
-        if row == 0
-        {
-            print("In Square.moveDown(). Row is 0, unable to move down. Row: \(row).")
-            return false
-        } /*else if gameGrid[row][column] != .background {    // Or if there is a tile piece below it, return false
-            return false
-        }*/
-        
-        row -= 1
-        print("In Square.moveDown(). Moved down. Row: \(row).")
-        return true
+        return !(isOnBottom()/* || isOnTopOfOtherPiece()*/)
+    }
+    
+    // Says whether the piece is on the bottom row or not.
+    func isOnBottom() -> Bool
+    {
+        return containsRowIndex(0)
+    }
+    
+    // Moves the square down one row if possible, returns whether it's still active or not after moving
+    func moveDown(/*gameGrid: [[TileType]]*/)
+    {
+        print("In Square.moveDown() about to actually move down. Row: \(rowIndex).")
+        if canMoveDown() { rowIndex -= 1 }
+        print("In Square.moveDown(). Moved down. Row: \(rowIndex).")
     }
 }
 
@@ -468,14 +493,15 @@ class GameScene: SKScene {
             bgRow.append(bgGroup)
         }
         
-        for _ in 1...18
+        tileGrid[0] = bgRow
+        for _ in 1..<18
         {
             tileGrid.append(bgRow)
         }
         
         grid!.fill(with: bgGroup)
         
-        run(SKAction.repeatForever(SKAction.sequence([SKAction.run(game.movePieceDown), SKAction.wait(forDuration: 1.0)])))
+        run(SKAction.repeatForever(SKAction.sequence([SKAction.run(game.movePieceDown), SKAction.wait(forDuration: 0.3)])))
         print("Should be up and running right now")
     }
     
@@ -525,9 +551,9 @@ class GameScene: SKScene {
     func updateTetrisGrid()
     {
         let gameGrid = game.getGameGrid()
-        for row in 1...17
+        for row in 0..<18
         {
-            for column in 1...9
+            for column in 0..<10
             {
                 tileGrid[row][column] = groupFromType(gameGrid[row][column])
             }
@@ -537,12 +563,12 @@ class GameScene: SKScene {
     // Displays grid
     func displayGrid()
     {
-        for row in 1...17
+        for rowIndex in 0..<18
         {
-            for column in 1...9
+            for columnIndex in 0..<10
             {
                 //print("Updating Tetris Grid. Row: \(row). Column: \(column).")
-                grid!.setTileGroup(tileGrid[row][column], forColumn: column, row: row)
+                grid!.setTileGroup(tileGrid[rowIndex][columnIndex], forColumn: columnIndex, row: rowIndex)
             }
         }
     }
