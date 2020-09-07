@@ -45,6 +45,29 @@ enum TileType
         // Shouldn't get here but just to make the compiler happy
         return TileType.background
     }
+    
+    func text() -> String
+    {
+        switch self
+        {
+        case .s_tile:
+            return "S Piece"
+        case .backwards_s_tile:
+            return "Backwards S Piece"
+        case .l_tile:
+            return "L Piece"
+        case .backwards_l_tile:
+            return "Backwards L Piece"
+        case .square_tile:
+            return "Square Piece"
+        case .long_tile:
+            return "Long Piece"
+        case .t_tile:
+            return "T Piece"
+        case .background:
+            return "Background"
+        }
+    }
 }
 
 // Class to do all the game logic and hold all the game data.
@@ -94,7 +117,7 @@ class TetrisGame
     }
     
     // Moves currently active piece down 1.
-    func movePieceDown()
+    func movePieceDown(grid: [[TileType]])
     {
         print("Attempting to move active piece down")
         
@@ -107,13 +130,13 @@ class TetrisGame
             }
             
             // Move the piece down
-            unwrappedActivePiece.moveDown()
+            unwrappedActivePiece.moveDown(grid: grid)
             
             // Add piece back to gameGrid in the new position
             updateGameGrid()
             
             // If the piece is unable to move down further, set it to inactive
-            if !unwrappedActivePiece.canMoveDown() { activePiece = nil }
+            if !unwrappedActivePiece.canMoveDown(grid: grid) { activePiece = nil }
         }
     }
     
@@ -130,11 +153,11 @@ class TetrisGame
     }
     
     // Function to delete a row if completed, and move everything above it down.
-    func deleteRow(_ row: Int)
+    func deleteRow(_ row: Int, grid: [[TileType]])
     {
         for piece in pieces
         {
-            piece.deleteRow(row)
+            piece.deleteRow(row, grid: grid)
         }
     }
     
@@ -263,9 +286,9 @@ class TetrisPiece
     }
     
     // Tells caller whether this tile can move down or not, updates isActive accordingly
-    func canMoveDown() -> Bool
+    func canMoveDown(grid:[[TileType]]) -> Bool
     {
-        if (isOnBottom()/*||isOnTopOfOtherPiece()*/)
+        if (isOnBottom() || isOnTopOfOtherPiece(grid: grid))
         {
             isActive = false
             return false
@@ -275,12 +298,32 @@ class TetrisPiece
     }
     
     // Moves all the squares in this piece down one, if possible. Returns whether it's active or not after moving down.
-    func moveDown()
+    func moveDown(grid: [[TileType]])
     {
         for square in squares
         {
-            square.moveDown()
+            square.moveDown(grid: grid)
         }
+    }
+    
+    // Returns true if any squares are on top of another Tetris piece
+    func isOnTopOfOtherPiece(grid: [[TileType]]) -> Bool
+    {
+        for square in squares
+        {
+            if !square.isOnBottom()
+            {
+                if !self.containsSquareInSpot(indexToCheck: square.indecesBelow()!)
+                {
+                    if square.isOnTopOfOtherSquare(grid: grid)
+                    {
+                        return true
+                    }
+                }
+            }
+        }
+        
+        return false
     }
     
     // Returns true if any of the squares in this piece are in the bottom row
@@ -297,7 +340,8 @@ class TetrisPiece
         return false
     }
     
-    func deleteRow(_ row: Int)
+    // Deletes any squares in this piece which are in that row
+    func deleteRow(_ row: Int, grid: [[TileType]])
     {
         var indecesToDelete: [Int] = []
         
@@ -312,7 +356,7 @@ class TetrisPiece
             // Move all squares above the deleted row down one.
             if squares[i].getRowIndex() > row
             {
-                squares[i].moveDown()
+                squares[i].moveDown(grid: grid)
             }
         }
         
@@ -326,19 +370,36 @@ class TetrisPiece
         }
     }
     
+    // Returns whether or not this piece has a square in a certain spot on the grid
+    func containsSquareInSpot(indexToCheck: [Int]) -> Bool
+    {
+        print("Checking if there is a square in row: \(indexToCheck[0]), column:\(indexToCheck[1])")
+        for square in squares
+        {
+            if square.isInSpot(spot: indexToCheck)
+            {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    // Public getter for squares
     func getSquares() -> [Square]
     {
         return squares
     }
     
+    // Generates and returns indeces
     func getIndeces() -> [[Int]]
     {
-        print("Getting Indeces: row: \(squares[0].getRowIndex()), \(squares[0].getColumnIndex())")
+        //print("Getting Indeces: row: \(squares[0].getRowIndex()), \(squares[0].getColumnIndex())")
         var indeces: [[Int]] = [[squares[0].getRowIndex(), squares[0].getColumnIndex()]]
         for i in 1..<4
         {
             let square = squares[i]
-            print("Getting Indeces: row: \(square.getRowIndex()), \(square.getColumnIndex())")
+            //print("Getting Indeces: row: \(square.getRowIndex()), \(square.getColumnIndex())")
             indeces.append([square.getRowIndex(), square.getColumnIndex()])
         }
         
@@ -390,10 +451,10 @@ class Square
         return false
     }
     
-    func canMoveDown() -> Bool
-    {
-        return !(isOnBottom()/* || isOnTopOfOtherPiece()*/)
-    }
+    //func canMoveDown(grid: [[TileType]]) -> Bool
+    //{
+    //    return !(isOnBottom() || isOnTopOfOtherSquare(grid: grid))
+    //}
     
     // Says whether the piece is on the bottom row or not.
     func isOnBottom() -> Bool
@@ -401,12 +462,43 @@ class Square
         return containsRowIndex(0)
     }
     
-    // Moves the square down one row if possible, returns whether it's still active or not after moving
-    func moveDown(/*gameGrid: [[TileType]]*/)
+    // Returns true if this square is on top of another Tetris piece
+    func isOnTopOfOtherSquare(grid: [[TileType]]) -> Bool
     {
-        print("In Square.moveDown() about to actually move down. Row: \(rowIndex).")
-        if canMoveDown() { rowIndex -= 1 }
-        print("In Square.moveDown(). Moved down. Row: \(rowIndex).")
+        print("Checking if this square is on top of another... Row: \(rowIndex+1), Column: \(columnIndex+1)")
+        if !isOnBottom()
+        {
+            print("Not on bottom. Doing checks.")
+            let squareBelow = grid[rowIndex-1][columnIndex]
+            if squareBelow != TileType.background
+            {
+                print("Square below is not background. Type: \(squareBelow.text())")
+                return true
+            }
+        }
+        return false
+    }
+    
+    // Returns indeces of square below, if not on bottom
+    func indecesBelow() -> [Int]?
+    {
+        if isOnBottom() { return nil }
+        return [rowIndex - 1, columnIndex]
+    }
+    
+    // Moves the square down one row if possible, returns whether it's still active or not after moving
+    func moveDown(grid: [[TileType]])
+    {
+        //print("In Square.moveDown() about to actually move down. Row: \(rowIndex).")
+        if !isOnBottom() { rowIndex -= 1 }
+        //print("In Square.moveDown(). Moved down. Row: \(rowIndex).")
+    }
+    
+    // Returns whether this square is in a specific spot
+    func isInSpot(spot: [Int]) -> Bool
+    {
+        print("Checking if these are the same:\nIndeces 1: \(rowIndex), \(columnIndex)\nIndeces 2: \(spot[0]), \(spot[1])\nResult: \(rowIndex == spot[0] && columnIndex == spot[1])")
+        return rowIndex == spot[0] && columnIndex == spot[1]
     }
 }
 
@@ -501,7 +593,7 @@ class GameScene: SKScene {
         
         grid!.fill(with: bgGroup)
         
-        run(SKAction.repeatForever(SKAction.sequence([SKAction.run(game.movePieceDown), SKAction.wait(forDuration: 0.3)])))
+        run(SKAction.repeatForever(SKAction.sequence([SKAction.run({self.game.movePieceDown(grid: self.game.getGameGrid())}), SKAction.wait(forDuration: 0.3)])))
         print("Should be up and running right now")
     }
     
@@ -539,8 +631,7 @@ class GameScene: SKScene {
     @objc func pressed()
     {
         print("Pressed")
-        game.resetGameGrid(firstRun: false)
-        //grid!.fill(with: tileGroups["Background"]!)
+        //game.resetGameGrid(firstRun: false)
         game.spawnPiece()
         updateTetrisGrid()
         displayGrid()
