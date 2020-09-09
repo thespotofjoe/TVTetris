@@ -21,24 +21,28 @@ class GameScene: SKScene {
     private var lastUpdate: TimeInterval = 0
     private var dtUpdate: TimeInterval = 0
     
+    // Variables to hold screen width and height. Will get programmatically later.
+    private var screenWidth = 1920
+    private var screenHeight = 1080
+    
     // Variable to help dpad stuff
-    private var actionsSincePress = 0
+    //private var actionsSincePress = 0
     
     // Variable to help us detect right and left clicks on the remote
-    private var dPadState: DPadState = .select
+    //private var dPadState: DPadState = .select
     
     /* Overridden system functions */
     override func didMove(to view: SKView)
     {
-        setUpControllerObservers()
+        //setUpControllerObservers()
         
-        //let press: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.pressed))
-        //press.allowedPressTypes = [NSNumber(value: UIPress.PressType.select.rawValue)]
-        //view.addGestureRecognizer(press)
+        let press: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.pressed))
+        press.allowedPressTypes = [NSNumber(value: UIPress.PressType.select.rawValue)]
+        view.addGestureRecognizer(press)
         
         print("Got here 1")
-        // Set width and height of square tiles to 25. (for 4K screens, this should be 50)
-        let size = 25
+        // Set width and height of square tiles to 40. (for 4K screens, this should be 80)
+        let size = 40
         
         // Define the background tiles.
         let bgTexture = SKTexture(imageNamed: "Background")
@@ -93,7 +97,7 @@ class GameScene: SKScene {
         let tileSet = SKTileSet(tileGroups: [bgGroup, sGroup, bwsGroup, lGroup, bwlGroup, squareGroup, longGroup, tGroup])
         grid = SKTileMapNode(tileSet: tileSet, columns: 10, rows: 18, tileSize: CGSize(width: size, height: size)/*bgTexture.size()*/)
         
-        grid!.position = CGPoint(x: 1000, y: 500)
+        grid!.position = CGPoint(x: screenWidth/2, y: screenHeight/2)
         grid!.setScale(1)
         addChild(grid!)
         print("Got here 3")
@@ -135,6 +139,15 @@ class GameScene: SKScene {
     }
     
     /* Our functions */
+    // Function to handle presses. Will be updated when I add controller functionality
+    @objc func pressed()
+    {
+        print("Pressed center.")
+        self.game.spawnPiece()
+        self.updateTetrisGrid()
+        self.displayGrid()
+    }
+    
     // Function to updates the grid of TileGroups to reflect the gameGrid
     func updateTetrisGrid()
     {
@@ -229,7 +242,7 @@ class GameScene: SKScene {
 }
 
 extension GameScene {
-    func setUpControllerObservers(){
+    /*func setUpControllerObservers(){
         NotificationCenter.default.addObserver(self, selector: #selector(self.setUpDirectionalPad), name: NSNotification.Name.GCControllerDidConnect, object: nil)
         //NotificationCenter.default.addObserver(self, selector: "controllerDisconnected", name: NSNotification.Name.GCControllerDidDisconnect, object: nil)
     }
@@ -270,7 +283,7 @@ extension GameScene {
                 return
             }*/
             
-            let threshold: Float = 0.7
+            //let threshold: Float = 0.7
             if micro.buttonA.isPressed
             {
                 /*if y > threshold
@@ -289,7 +302,7 @@ extension GameScene {
                         self.actionsSincePress += 1
                     }
                 }
-                else */if x > threshold
+                else *//*if x > threshold
                 {
                     if self.actionsSincePress == 0
                     {
@@ -304,17 +317,17 @@ extension GameScene {
                         print("Pressed left.")
                         self.actionsSincePress += 1
                     }
-                } else {
-                    if self.actionsSincePress == 0
-                    {
+                } else {*/
+                    //if self.actionsSincePress == 0
+                    //{
                         print("Pressed center.")
                         self.game.spawnPiece()
                         self.updateTetrisGrid()
                         self.displayGrid()
-                        self.actionsSincePress += 1
-                    }
-                }
+                        //self.actionsSincePress += 1
+                    //}
+                //}
             }
         }
-    }
+    }*/
 }
