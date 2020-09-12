@@ -10,14 +10,6 @@ import SpriteKit
 import GameplayKit
 import GameController
 
-/*enum DPadState {
-    case select
-    case right
-    case left
-    case up
-    case down
-}*/
-
 enum TileType
 {
     case s_tile
@@ -295,7 +287,7 @@ class TetrisPiece
     }
     
     // Tells caller whether this tile can move down or not, updates isActive accordingly
-    func canMoveDown(grid:[[TileType]]) -> Bool
+    func canMoveDown(grid: [[TileType]]) -> Bool
     {
         if (isOnBottom() || isOnTopOfOtherPiece(grid: grid))
         {
@@ -303,6 +295,20 @@ class TetrisPiece
             return false
         }
         
+        return true
+    }
+    
+    // Tells caller whether htis tile can move left or not
+    func canMoveLeft(grid: [[TileType]]) -> Bool
+    {
+        if piecesToLeft(grid: grid) { return false }
+        return true
+    }
+    
+    // Tells caller whether htis tile can move right or not
+    func canMoveRight(grid: [[TileType]]) -> Bool
+    {
+        if piecesToRight(grid: grid) { return false }
         return true
     }
     
@@ -322,9 +328,52 @@ class TetrisPiece
         {
             if !square.isOnBottom()
             {
+                // Makes sure we don't count another suqare from this piece as a false positive
                 if !self.containsSquareInSpot(indexToCheck: square.indecesBelow()!)
                 {
                     if square.isOnTopOfOtherSquare(grid: grid)
+                    {
+                        return true
+                    }
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    // Returns true if any squares from other pieces are just to the right of this tile
+    func piecesToLeft(grid: [[TileType]]) -> Bool
+    {
+        for square in squares
+        {
+            if !square.isOnLeft()
+            {
+                // Makes sure we don't count another suqare from this piece as a false positive
+                if !self.containsSquareInSpot(indexToCheck: square.indecesToLeft()!)
+                {
+                    if square.hasOtherSquareOnLeft(grid: grid)
+                    {
+                        return true
+                    }
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    // Returns true if any squares from other pieces are just to the right of this tile
+    func piecesToRight(grid: [[TileType]]) -> Bool
+    {
+        for square in squares
+        {
+            if !square.isOnRight()
+            {
+                // Makes sure we don't count another suqare from this piece as a false positive
+                if !self.containsSquareInSpot(indexToCheck: square.indecesToRight()!)
+                {
+                    if square.hasOtherSquareOnRight(grid: grid)
                     {
                         return true
                     }
@@ -450,20 +499,10 @@ class Square
     }
     
     // If this square is in that row, return true. Otherwise return false.
-    func containsRowIndex(_ rowIndex:Int) -> Bool
-    {
-        if self.rowIndex == rowIndex
-        {
-            return true
-        }
-        
-        return false
-    }
+    func containsRowIndex(_ rowIndex: Int) -> Bool { return self.rowIndex == rowIndex }
     
-    //func canMoveDown(grid: [[TileType]]) -> Bool
-    //{
-    //    return !(isOnBottom() || isOnTopOfOtherSquare(grid: grid))
-    //}
+    // If this square is in that column, return true. Otherwise return false.
+    func containsColumnIndex(_ columnIndex: Int) -> Bool { return self.columnIndex == columnIndex }
     
     // Says whether the piece is on the bottom row or not.
     func isOnBottom() -> Bool
@@ -471,17 +510,55 @@ class Square
         return containsRowIndex(0)
     }
     
+    // Says whether the square is touching the left side or not
+    func isOnLeft() -> Bool
+    {
+        return containsColumnIndex(0)
+    }
+    
+    // Says whether the square is touching the right side or not
+    func isOnRight() -> Bool
+    {
+        return containsColumnIndex(9)
+    }
+    
     // Returns true if this square is on top of another Tetris piece
     func isOnTopOfOtherSquare(grid: [[TileType]]) -> Bool
     {
-        //print("Checking if this square is on top of another... Row: \(rowIndex+1), Column: \(columnIndex+1)")
         if !isOnBottom()
         {
             //print("Not on bottom. Doing checks.")
             let squareBelow = grid[rowIndex-1][columnIndex]
             if squareBelow != TileType.background
             {
-                //print("Square below is not background. Type: \(squareBelow.text())")
+                return true
+            }
+        }
+        return false
+    }
+    
+    // Returns true if this square has another piece to the left
+    func hasOtherSquareOnLeft(grid: [[TileType]]) -> Bool
+    {
+        if !isOnLeft()
+        {
+            let squareToLeft = grid[rowIndex][columnIndex-1]
+            if squareToLeft != TileType.background
+            {
+                return true
+            }
+        }
+        return false
+    }
+    
+    // Returns true if this square has another piece to the right
+    func hasOtherSquareOnRight(grid: [[TileType]]) -> Bool
+    {
+        if !isOnRight()
+        {
+            let squareToRight = grid[rowIndex][columnIndex+1]
+            if squareToRight != TileType.background
+            {
                 return true
             }
         }
@@ -494,6 +571,12 @@ class Square
         if isOnBottom() { return nil }
         return [rowIndex - 1, columnIndex]
     }
+    
+    // Returns indeces of square to the left, if there are any
+    func indecesToLeft() -> [Int]? { return isOnLeft() ? nil : [rowIndex, columnIndex - 1] }
+    
+    // Returns indeces of square to the right, if there are any
+    func indecesToRight() -> [Int]? { return isOnRight() ? nil : [rowIndex, columnIndex + 1] }
     
     // Moves the square down one row if possible, returns whether it's still active or not after moving
     func moveDown(grid: [[TileType]])
