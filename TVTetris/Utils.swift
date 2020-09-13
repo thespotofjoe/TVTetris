@@ -141,6 +141,54 @@ class TetrisGame
         }
     }
     
+    // Moves currently active piece left 1 if possible.
+    func movePieceLeft(grid: [[TileType]])
+    {
+        print("Attempting to move active piece left")
+        
+        if let unwrappedActivePiece = activePiece
+        {
+            if unwrappedActivePiece.canMoveLeft(grid: grid)
+            {
+                // Erase square from grid so we don't have old ghost squares
+                for square in unwrappedActivePiece.getSquares()
+                {
+                    gameGrid[square.getRowIndex()][square.getColumnIndex()] = .background
+                }
+                
+                // Move the piece down
+                unwrappedActivePiece.moveLeft(grid: grid)
+                
+                // Add piece back to gameGrid in the new position
+                updateGameGrid()
+            }
+        }
+    }
+    
+    // Moves currently active piece right 1 if possible.
+    func movePieceRight(grid: [[TileType]])
+    {
+        print("Attempting to move active piece right")
+        
+        if let unwrappedActivePiece = activePiece
+        {
+            if unwrappedActivePiece.canMoveRight(grid: grid)
+            {
+                // Erase square from grid so we don't have old ghost squares
+                for square in unwrappedActivePiece.getSquares()
+                {
+                    gameGrid[square.getRowIndex()][square.getColumnIndex()] = .background
+                }
+                
+                // Move the piece down
+                unwrappedActivePiece.moveRight(grid: grid)
+                
+                // Add piece back to gameGrid in the new position
+                updateGameGrid()
+            }
+        }
+    }
+    
     // Function to check if a piece has landed or is still falling.
     func checkIfLanded() -> Bool
     {
@@ -312,12 +360,30 @@ class TetrisPiece
         return true
     }
     
-    // Moves all the squares in this piece down one, if possible. Returns whether it's active or not after moving down.
+    // Moves all the squares in this piece down one, if possible.
     func moveDown(grid: [[TileType]])
     {
         for square in squares
         {
             square.moveDown(grid: grid)
+        }
+    }
+    
+    // Moves all the squares in this piece left one, if possible.
+    func moveLeft(grid: [[TileType]])
+    {
+        for square in squares
+        {
+            square.moveLeft(grid: grid)
+        }
+    }
+    
+    // Moves all the squares in this piece left one, if possible.
+    func moveRight(grid: [[TileType]])
+    {
+        for square in squares
+        {
+            square.moveRight(grid: grid)
         }
     }
     
@@ -578,12 +644,28 @@ class Square
     // Returns indeces of square to the right, if there are any
     func indecesToRight() -> [Int]? { return isOnRight() ? nil : [rowIndex, columnIndex + 1] }
     
-    // Moves the square down one row if possible, returns whether it's still active or not after moving
+    // Moves the square down one row if possible
     func moveDown(grid: [[TileType]])
     {
         //print("In Square.moveDown() about to actually move down. Row: \(rowIndex).")
         if !isOnBottom() { rowIndex -= 1 }
         //print("In Square.moveDown(). Moved down. Row: \(rowIndex).")
+    }
+    
+    // Moves the square left one column if possible
+    func moveLeft(grid: [[TileType]])
+    {
+        print("In Square.moveLeft() about to actually move left. Column: \(columnIndex).")
+        if !isOnLeft() { columnIndex -= 1 }
+        print("In Square.moveLeft(). Moved left. Column: \(columnIndex).")
+    }
+    
+    // Moves the square right one column if possible
+    func moveRight(grid: [[TileType]])
+    {
+        print("In Square.moveRight() about to actually move right. Column: \(columnIndex).")
+        if !isOnRight() { columnIndex += 1 }
+        print("In Square.moveRight(). Moved right. Column: \(columnIndex).")
     }
     
     // Returns whether this square is in a specific spot
