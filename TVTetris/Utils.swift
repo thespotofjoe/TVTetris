@@ -118,37 +118,14 @@ class TetrisGame
     }
     
     // Moves currently active piece down 1.
-    func movePieceDown(grid: [[TileType]])
+    func movePieceDown()
     {
         //print("Attempting to move active piece down")
         
         if let unwrappedActivePiece = activePiece
         {
-            // Erase square from grid so we don't have old ghost squares
-            for square in unwrappedActivePiece.getSquares()
-            {
-                gameGrid[square.getRowIndex()][square.getColumnIndex()] = .background
-            }
-            
-            // Move the piece down
-            unwrappedActivePiece.moveDown(grid: grid)
-            
-            // Add piece back to gameGrid in the new position
-            updateGameGrid()
-            
-            // If the piece is unable to move down further, set it to inactive
-            if !unwrappedActivePiece.canMoveDown(grid: grid) { activePiece = nil }
-        }
-    }
-    
-    // Moves currently active piece left 1 if possible.
-    func movePieceLeft(grid: [[TileType]])
-    {
-        print("Attempting to move active piece left")
-        
-        if let unwrappedActivePiece = activePiece
-        {
-            if unwrappedActivePiece.canMoveLeft(grid: grid)
+            // Check if we can move this piece down or not
+            if unwrappedActivePiece.canMoveDown(grid: gameGrid)
             {
                 // Erase square from grid so we don't have old ghost squares
                 for square in unwrappedActivePiece.getSquares()
@@ -157,7 +134,34 @@ class TetrisGame
                 }
                 
                 // Move the piece down
-                unwrappedActivePiece.moveLeft(grid: grid)
+                unwrappedActivePiece.moveDown(grid: gameGrid)
+                
+                // Add piece back to gameGrid in the new position
+                updateGameGrid()
+                
+                // If the piece is unable to move down further, set it to inactive
+                if !unwrappedActivePiece.canMoveDown(grid: gameGrid) { activePiece = nil }
+            }
+        }
+    }
+    
+    // Moves currently active piece left 1 if possible.
+    func movePieceLeft()
+    {
+        print("Attempting to move active piece left")
+        
+        if let unwrappedActivePiece = activePiece
+        {
+            if unwrappedActivePiece.canMoveLeft(grid: gameGrid)
+            {
+                // Erase square from grid so we don't have old ghost squares
+                for square in unwrappedActivePiece.getSquares()
+                {
+                    gameGrid[square.getRowIndex()][square.getColumnIndex()] = .background
+                }
+                
+                // Move the piece left
+                unwrappedActivePiece.moveLeft(grid: gameGrid)
                 
                 // Add piece back to gameGrid in the new position
                 updateGameGrid()
@@ -166,13 +170,13 @@ class TetrisGame
     }
     
     // Moves currently active piece right 1 if possible.
-    func movePieceRight(grid: [[TileType]])
+    func movePieceRight()
     {
         print("Attempting to move active piece right")
         
         if let unwrappedActivePiece = activePiece
         {
-            if unwrappedActivePiece.canMoveRight(grid: grid)
+            if unwrappedActivePiece.canMoveRight(grid: gameGrid)
             {
                 // Erase square from grid so we don't have old ghost squares
                 for square in unwrappedActivePiece.getSquares()
@@ -181,7 +185,7 @@ class TetrisGame
                 }
                 
                 // Move the piece down
-                unwrappedActivePiece.moveRight(grid: grid)
+                unwrappedActivePiece.moveRight(grid: gameGrid)
                 
                 // Add piece back to gameGrid in the new position
                 updateGameGrid()
@@ -349,14 +353,14 @@ class TetrisPiece
     // Tells caller whether htis tile can move left or not
     func canMoveLeft(grid: [[TileType]]) -> Bool
     {
-        if piecesToLeft(grid: grid) { return false }
+        if piecesToLeft(grid: grid) || isOnLeft() { return false }
         return true
     }
     
     // Tells caller whether htis tile can move right or not
     func canMoveRight(grid: [[TileType]]) -> Bool
     {
-        if piecesToRight(grid: grid) { return false }
+        if piecesToRight(grid: grid) || isOnRight() { return false }
         return true
     }
     
@@ -420,6 +424,7 @@ class TetrisPiece
                 {
                     if square.hasOtherSquareOnLeft(grid: grid)
                     {
+                        print("There is another piece on the left.")
                         return true
                     }
                 }
@@ -456,6 +461,34 @@ class TetrisPiece
         for square in squares
         {
             if square.isOnBottom()
+            {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    // Returns true if any of the squares in this piece are in the leftmost column
+    func isOnLeft() -> Bool
+    {
+        for square in squares
+        {
+            if square.isOnLeft()
+            {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    // Returns true if any of the squares in this piece are in the rightmost column
+    func isOnRight() -> Bool
+    {
+        for square in squares
+        {
+            if square.isOnRight()
             {
                 return true
             }

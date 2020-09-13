@@ -115,24 +115,48 @@ class GameScene: SKScene {
         
         grid!.fill(with: bgGroup)
         
-        run(SKAction.repeatForever(SKAction.sequence([SKAction.run({self.game.movePieceDown(grid: self.game.getGameGrid())}), SKAction.wait(forDuration: 0.3)])))
+        run(SKAction.repeatForever(SKAction.sequence([
+            SKAction.run({self.spawnTile()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()}),
+            SKAction.wait(forDuration: 0.3),
+            SKAction.run({self.game.movePieceDown()})])))
         print("Should be up and running right now")
     }
     
     override func update(_ currentTime: TimeInterval)
     {
         /* Called before each frame is rendered */
-        // Update lastUpdate and calculate dt between updates
-        if (lastUpdate > 0)
-        {
-            dtUpdate = currentTime - lastUpdate
-        } else {
-            dtUpdate = 0
-        }
-        
-        // Update the lastUpdateTime to right now
-        lastUpdate = currentTime
-        
         updateTetrisGrid()
         displayGrid()
         
@@ -143,7 +167,8 @@ class GameScene: SKScene {
     @objc func pressed()
     {
         print("Pressed center.")
-        self.game.spawnPiece()
+        //self.game.spawnPiece()
+        self.game.movePieceLeft()
         self.updateTetrisGrid()
         self.displayGrid()
     }
