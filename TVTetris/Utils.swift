@@ -335,7 +335,7 @@ class TetrisPiece
     // convenience init for a tile at the startline
     convenience init (type: TileType)
     {
-        self.init(type: type, startColumn: 5, startRow: 18)
+        self.init(type: type, startColumn: 8, startRow: 18)
     }
     
     // Tells caller whether this tile can move down or not, updates isActive accordingly

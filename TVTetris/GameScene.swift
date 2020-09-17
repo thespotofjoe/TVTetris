@@ -267,92 +267,109 @@ class GameScene: SKScene {
 }
 
 extension GameScene {
-    /*func setUpControllerObservers(){
-        NotificationCenter.default.addObserver(self, selector: #selector(self.setUpDirectionalPad), name: NSNotification.Name.GCControllerDidConnect, object: nil)
-        //NotificationCenter.default.addObserver(self, selector: "controllerDisconnected", name: NSNotification.Name.GCControllerDidDisconnect, object: nil)
+    func setUpControllerObservers(){
+        NotificationCenter.default.addObserver(self, selector: #selector(connectController), name: NSNotification.Name.GCControllerDidConnect, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(disconnectController), name: NSNotification.Name.GCControllerDidDisconnect, object: nil)
     }
     
-    // Sets up ability to detect directional presses
-    @objc private func setUpDirectionalPad() {
-        print("Setting up controller 1")
-        guard let controller = GCController.controllers().first else { return }
-        print("Setting up controller 2")
-        guard let micro = controller.microGamepad else { return }
-        print("Setting up controller 3")
-        micro.reportsAbsoluteDpadValues = true
-        micro.buttonA.pressedChangedHandler =
+    // This Function is called when a controller is connected to the Apple TV
+    @objc func connectController()
+    {
+        //Unpause the Game if it is currently paused
+        self.isPaused = false
+        
+        setupControllerControls(controller: GCController.controllers().first!)
+    }
+    
+    // This Function is called when a controller is disconnected from the Apple TV
+    @objc func disconnectController()
+    {
+        // Pause the game
+        self.isPaused = true
+    }
+    
+    func setupControllerControls(controller: GCController)
+    {
+        //Function that check the controller when anything is moved or pressed on it
+        controller.extendedGamepad?.valueChangedHandler =
         {
-            (element: GCControllerElement, value: Float, pressed: Bool) in
-            self.actionsSincePress = 0
+            (gamepad: GCExtendedGamepad, element: GCControllerElement) in
+            // Add movement in here for sprites of the controllers
+            self.controllerInputDetected(gamepad: gamepad, element: element, index: controller.playerIndex.rawValue)
+        }
+    }
+    
+    func controllerInputDetected(gamepad: GCExtendedGamepad, element: GCControllerElement, index: Int)
+    {
+        
+        // Left Thumbstick
+        if (gamepad.leftThumbstick == element)
+        {
+            if (gamepad.leftThumbstick.xAxis.value != 0)
+            {
+            print("Controller: \(index), LeftThumbstickXAxis: \(gamepad.leftThumbstick.xAxis)")
+            } else if (gamepad.leftThumbstick.xAxis.value == 0) {
+                // Thumbstick is back to center
+            }
         }
         
-        micro.dpad.valueChangedHandler =
+        // Right Thumbstick
+        if (gamepad.rightThumbstick == element)
         {
-            (pad, x, y) in
-            // Update lastPress and calculate dt between presses
-            /*let currentTime = TimeInterval(NSDate().timeIntervalSince1970)
-            
-            if (self!.lastPress > 0)
+            if (gamepad.rightThumbstick.xAxis.value != 0)
             {
-                self!.dtPress = currentTime - self!.lastPress
-            } else {
-                self!.dtPress = 0
-            }
-            
-            // Update the lastPress to right now
-            self!.lastPress = currentTime
-            
-            // If this value changed has updated faster than two screen refreshes, it's a bug. Disregard.
-            if self!.dtPress < 2*self!.dtUpdate
-            {
-                return
-            }*/
-            
-            //let threshold: Float = 0.7
-            if micro.buttonA.isPressed
-            {
-                /*if y > threshold
-                {
-                    if self.actionsSincePress == 0
-                    {
-                        print("Pressed up.")
-                        self.actionsSincePress += 1
-                    }
-                }
-                else if y < -threshold
-                {
-                    if self.actionsSincePress == 0
-                    {
-                        print("Pressed down.")
-                        self.actionsSincePress += 1
-                    }
-                }
-                else *//*if x > threshold
-                {
-                    if self.actionsSincePress == 0
-                    {
-                        print("Pressed right.")
-                        self.actionsSincePress += 1
-                    }
-                }
-                else if x < -threshold
-                {
-                    if self.actionsSincePress == 0
-                    {
-                        print("Pressed left.")
-                        self.actionsSincePress += 1
-                    }
-                } else {*/
-                    //if self.actionsSincePress == 0
-                    //{
-                        print("Pressed center.")
-                        self.game.spawnPiece()
-                        self.updateTetrisGrid()
-                        self.displayGrid()
-                        //self.actionsSincePress += 1
-                    //}
-                //}
+            print("Controller: \(index), rightThumbstickXAxis: \(gamepad.rightThumbstick.xAxis)")
+            } else if (gamepad.rightThumbstick.xAxis.value == 0) {
+                // Thumbstick is back to center
             }
         }
-    }*/
+            
+        // D-Pad
+        else if (gamepad.dpad == element)
+        {
+            if (gamepad.dpad.xAxis.value != 0)
+            {
+                print("Controller: \(index), D-PadXAxis: \(gamepad.dpad.xAxis)")
+            } else if (gamepad.dpad.xAxis.value == 0) {
+                // D-Pad is back to center
+            }
+        }
+            
+        // A Button
+        else if (gamepad.buttonA == element)
+        {
+            if (gamepad.buttonA.value != 0)
+            {
+                print("Controller: \(index), A-Button Pressed!")
+            }
+        }
+            
+        // B Button
+        else if (gamepad.buttonB == element)
+        {
+            if (gamepad.buttonB.value != 0)
+            {
+                print("Controller: \(index), B-Button Pressed!")
+            }
+        }
+            
+        // Y Button
+        else if (gamepad.buttonY == element)
+        {
+            if (gamepad.buttonY.value != 0)
+            {
+                print("Controller: \(index), Y-Button Pressed!")
+            }
+        }
+            
+        // X Button
+        else if (gamepad.buttonX == element)
+        {
+            if (gamepad.buttonX.value != 0)
+            {
+                print("Controller: \(index), X-Button Pressed!")
+            }
+        }
+    }
 }
