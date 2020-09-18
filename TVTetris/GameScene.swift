@@ -114,42 +114,9 @@ class GameScene: SKScene {
         
         grid!.fill(with: bgGroup)
         
-        run(SKAction.repeatForever(SKAction.sequence([
-            SKAction.run({self.spawnTile()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()}),
-            SKAction.wait(forDuration: 0.3),
-            SKAction.run({self.game.movePieceDown()})])))
+        run(SKAction.repeatForever(SKAction.sequence(
+            [SKAction.run({self.game.gameStep()}),
+            SKAction.wait(forDuration: 0.7)])))
         print("Should be up and running right now")
     }
     
@@ -167,9 +134,7 @@ class GameScene: SKScene {
     {
         print("Pressed center.")
         //self.game.spawnPiece()
-        self.game.movePieceLeft()
-        self.updateTetrisGrid()
-        self.displayGrid()
+
     }
     
     // Function to updates the grid of TileGroups to reflect the gameGrid
@@ -306,11 +271,13 @@ extension GameScene {
         {[unowned self] _,_,pressed in
             if pressed
             {
-                print("Button A Pressed")
-            } else {
-                print("Button A Released")
-            }
-            // Rotate the tile
+                // Rotate the tile
+                
+                //print("Button A Pressed")
+            } //else {
+                //print("Button A Released")
+            //}
+            
         }
         
         let moveTileHandler: GCControllerDirectionPadValueChangedHandler =
@@ -320,11 +287,15 @@ extension GameScene {
             //If it's pointing to the left
             if xValue < -0.5
             {
+                self.game.movePieceLeft()
+                self.updateTetrisGrid()
+                self.displayGrid()
                 print("Left Pressed!")
             } else if xValue > 0.5 {
+                self.game.movePieceRight()
+                self.updateTetrisGrid()
+                self.displayGrid()
                 print("Right Pressed!")
-            } else if xValue == 0 {
-                print("DPad Released!")
             }
         }
         
