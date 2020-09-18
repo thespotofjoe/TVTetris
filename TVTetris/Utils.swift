@@ -424,7 +424,7 @@ class TetrisPiece
                 {
                     if square.hasOtherSquareOnLeft(grid: grid)
                     {
-                        print("There is another piece on the left.")
+                        //print("There is another piece on the left.")
                         return true
                     }
                 }
@@ -688,17 +688,17 @@ class Square
     // Moves the square left one column if possible
     func moveLeft(grid: [[TileType]])
     {
-        print("In Square.moveLeft() about to actually move left. Column: \(columnIndex).")
+        //print("In Square.moveLeft() about to actually move left. Column: \(columnIndex).")
         if !isOnLeft() { columnIndex -= 1 }
-        print("In Square.moveLeft(). Moved left. Column: \(columnIndex).")
+        //print("In Square.moveLeft(). Moved left. Column: \(columnIndex).")
     }
     
     // Moves the square right one column if possible
     func moveRight(grid: [[TileType]])
     {
-        print("In Square.moveRight() about to actually move right. Column: \(columnIndex).")
+        //print("In Square.moveRight() about to actually move right. Column: \(columnIndex).")
         if !isOnRight() { columnIndex += 1 }
-        print("In Square.moveRight(). Moved right. Column: \(columnIndex).")
+        //print("In Square.moveRight(). Moved right. Column: \(columnIndex).")
     }
     
     // Returns whether this square is in a specific spot

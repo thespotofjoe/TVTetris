@@ -34,12 +34,11 @@ class GameScene: SKScene {
     /* Overridden system functions */
     override func didMove(to view: SKView)
     {
-        //setUpControllerObservers()
+        setUpControllerObservers()
         
-        let press: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.pressed))
-        press.allowedPressTypes = [NSNumber(value: UIPress.PressType.select.rawValue)]
-        view.addGestureRecognizer(press)
-        
+        //let press: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.pressed))
+        //press.allowedPressTypes = [NSNumber(value: UIPress.PressType.select.rawValue)]
+        //view.addGestureRecognizer(press)
         print("Got here 1")
         // Set width and height of square tiles to 40. (for 4K screens, this should be 80)
         let size = 40
@@ -267,7 +266,10 @@ class GameScene: SKScene {
 }
 
 extension GameScene {
-    func setUpControllerObservers(){
+    func setUpControllerObservers()
+    {
+        print("in setUpControllerObservers()")
+        
         NotificationCenter.default.addObserver(self, selector: #selector(connectController), name: NSNotification.Name.GCControllerDidConnect, object: nil)
         
         NotificationCenter.default.addObserver(self, selector: #selector(disconnectController), name: NSNotification.Name.GCControllerDidDisconnect, object: nil)
@@ -276,10 +278,19 @@ extension GameScene {
     // This Function is called when a controller is connected to the Apple TV
     @objc func connectController()
     {
+        print("in connectController(). Controller detected")
         //Unpause the Game if it is currently paused
         self.isPaused = false
         
-        setupControllerControls(controller: GCController.controllers().first!)
+        for controller in GCController.controllers()
+        {
+            if let extendedGamepad = controller.extendedGamepad
+            {
+                print("found extendedGamepad.")
+                setupControllerControls(extendedGamepad)
+            }
+        }
+        
     }
     
     // This Function is called when a controller is disconnected from the Apple TV
@@ -289,20 +300,43 @@ extension GameScene {
         self.isPaused = true
     }
     
-    func setupControllerControls(controller: GCController)
+    func setupControllerControls(_ extendedGamepad: GCExtendedGamepad)
     {
-        //Function that check the controller when anything is moved or pressed on it
-        controller.extendedGamepad?.valueChangedHandler =
-        {
-            (gamepad: GCExtendedGamepad, element: GCControllerElement) in
-            // Add movement in here for sprites of the controllers
-            self.controllerInputDetected(gamepad: gamepad, element: element, index: controller.playerIndex.rawValue)
+        let rotateTileHandler: GCControllerButtonValueChangedHandler =
+        {[unowned self] _,_,pressed in
+            if pressed
+            {
+                print("Button A Pressed")
+            } else {
+                print("Button A Released")
+            }
+            // Rotate the tile
         }
+        
+        let moveTileHandler: GCControllerDirectionPadValueChangedHandler =
+        {[unowned self] _, xValue, yValue in
+            print("DPad changed!")
+            
+            //If it's pointing to the left
+            if xValue < -0.5
+            {
+                print("Left Pressed!")
+            } else if xValue > 0.5 {
+                print("Right Pressed!")
+            } else if xValue == 0 {
+                print("DPad Released!")
+            }
+        }
+        
+        print("In setupControllerControls()")
+        //Function that check the controller when anything is moved or pressed on it
+        extendedGamepad.buttonA.pressedChangedHandler = rotateTileHandler
+        extendedGamepad.dpad.valueChangedHandler = moveTileHandler
     }
     
-    func controllerInputDetected(gamepad: GCExtendedGamepad, element: GCControllerElement, index: Int)
+/*    func controllerInputDetected(gamepad: GCExtendedGamepad, element: GCControllerElement, index: Int)
     {
-        
+        print("Input detected.")
         // Left Thumbstick
         if (gamepad.leftThumbstick == element)
         {
@@ -335,16 +369,8 @@ extension GameScene {
                 // D-Pad is back to center
             }
         }
-            
-        // A Button
-        else if (gamepad.buttonA == element)
-        {
-            if (gamepad.buttonA.value != 0)
-            {
-                print("Controller: \(index), A-Button Pressed!")
-            }
-        }
-            
+    }*/
+      /*
         // B Button
         else if (gamepad.buttonB == element)
         {
@@ -371,5 +397,5 @@ extension GameScene {
                 print("Controller: \(index), X-Button Pressed!")
             }
         }
-    }
+    }*/
 }
