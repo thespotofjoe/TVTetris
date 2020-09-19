@@ -150,6 +150,9 @@ class TetrisGame
                 if !unwrappedActivePiece.canMoveDown(grid: gameGrid) { activePiece = nil }
             }
         }
+        
+        // Did the user complete any rows?
+        for row in 0..<18 { checkForCompletedRow(row) }
     }
     
     // Moves currently active piece left 1 if possible.
@@ -174,6 +177,9 @@ class TetrisGame
                 updateGameGrid()
             }
         }
+        
+        // Did the user complete any rows?
+        for row in 0..<18 { checkForCompletedRow(row) }
     }
     
     // Moves currently active piece right 1 if possible.
@@ -198,18 +204,23 @@ class TetrisGame
                 updateGameGrid()
             }
         }
-    }
-    
-    // Function to check if a piece has landed or is still falling.
-    func checkIfLanded() -> Bool
-    {
-        return false
+        
+        // Did the user complete any rows?
+        for row in 0..<18 { checkForCompletedRow(row) }
     }
     
     // Function to check if a row is completed.
-    func checkForCompletedRow(_ row: Int)
+    func checkForCompletedRow(_ row: Int) -> Bool
     {
+        // Check all squares in this row. If there are no background tiles, it is complete. If there are, it is incomplete.
+        for square in gameGrid[row]
+        {
+            if square == .background
+            { print("Row \(row+1) is incomplete."); return false }
+        }
         
+        print ("Row \(row+1) is complete.")
+        return true
     }
     
     // Function to delete a row if completed, and move everything above it down.
