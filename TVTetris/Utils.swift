@@ -94,12 +94,15 @@ class TetrisGame
     
     func resetGameGrid(firstRun: Bool)
     {
+        // Create a row of background tiles
         var resetRow: [TileType] = []
         for _ in 1...10
         {
             resetRow.append(.background)
         }
         
+        
+        // Fill the grid with rows of background tiles
         gameGrid[0] = resetRow
         for i in 1..<18
         {
@@ -110,6 +113,10 @@ class TetrisGame
                 gameGrid[i] = resetRow
             }
         }
+        
+        // Erase data
+        pieces = []
+        activePiece = nil
     }
     
     func getGameGrid() -> [[TileType]]

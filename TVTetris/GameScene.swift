@@ -271,9 +271,11 @@ extension GameScene {
         {[unowned self] _,_,pressed in
             if pressed
             {
+                self.game.resetGameGrid(firstRun: false)
+                self.displayGrid()
                 // Rotate the tile
                 
-                //print("Button A Pressed")
+                print("Button A Pressed")
             } //else {
                 //print("Button A Released")
             //}
@@ -284,18 +286,23 @@ extension GameScene {
         {[unowned self] _, xValue, yValue in
             print("DPad changed!")
             
-            //If it's pointing to the left
+            // If the player pressed Left on the dpad
             if xValue < -0.5
             {
                 self.game.movePieceLeft()
                 self.updateTetrisGrid()
                 self.displayGrid()
                 print("Left Pressed!")
-            } else if xValue > 0.5 {
+            } else if xValue > 0.5 {    // If the player pressed Right on the dpad
                 self.game.movePieceRight()
                 self.updateTetrisGrid()
                 self.displayGrid()
                 print("Right Pressed!")
+            } else if yValue < -0.5 {   // If the player pressed Down on the dpad
+                self.game.movePieceDown()
+                self.updateTetrisGrid()
+                self.displayGrid()
+                print("Down Pressed!")
             }
         }
         
