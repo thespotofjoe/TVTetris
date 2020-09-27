@@ -89,7 +89,17 @@ class TetrisGame
         }
         
         alreadyInstantiated = true
-        resetGameGrid(firstRun: true)
+        resetGame(firstRun: true)
+    }
+    
+    func resetGame(firstRun: Bool)
+    {
+        // Fill grid with background tiles
+        resetGameGrid(firstRun: firstRun)
+        
+        // Erase data
+        pieces = []
+        activePiece = nil
     }
     
     func resetGameGrid(firstRun: Bool)
@@ -113,10 +123,6 @@ class TetrisGame
                 gameGrid[i] = resetRow
             }
         }
-        
-        // Erase data
-        pieces = []
-        activePiece = nil
     }
     
     func getGameGrid() -> [[TileType]]
@@ -146,13 +152,28 @@ class TetrisGame
                 // Add piece back to gameGrid in the new position
                 updateGameGrid()
                 
-                // If the piece is unable to move down further, set it to inactive
-                if !unwrappedActivePiece.canMoveDown(grid: gameGrid) { activePiece = nil }
+                // If the piece is unable to move down further, set it to inactive and check for completed rows
+                if !unwrappedActivePiece.canMoveDown(grid: gameGrid)
+                {
+                    activePiece = nil
+                    
+                    // Did the user complete any rows? Delete any.
+                    var rowsToDelete: [Int] = []
+                    for row in 0..<18
+                    {
+                        if checkForCompletedRow(row) { rowsToDelete.append(row) }
+                    }
+                    
+                    for row in rowsToDelete
+                    {
+                        deleteRow(row)
+                    }
+                }
             }
         }
         
         // Did the user complete any rows?
-        for row in 0..<18 { checkForCompletedRow(row) }
+        //for row in 0..<18 { checkForCompletedRow(row) }
     }
     
     // Moves currently active piece left 1 if possible.
@@ -179,7 +200,7 @@ class TetrisGame
         }
         
         // Did the user complete any rows?
-        for row in 0..<18 { checkForCompletedRow(row) }
+        //for row in 0..<18 { checkForCompletedRow(row) }
     }
     
     // Moves currently active piece right 1 if possible.
@@ -206,7 +227,7 @@ class TetrisGame
         }
         
         // Did the user complete any rows?
-        for row in 0..<18 { checkForCompletedRow(row) }
+        //for row in 0..<18 { checkForCompletedRow(row) }
     }
     
     // Function to check if a row is completed.
@@ -224,11 +245,11 @@ class TetrisGame
     }
     
     // Function to delete a row if completed, and move everything above it down.
-    func deleteRow(_ row: Int, grid: [[TileType]])
+    func deleteRow(_ row: Int)
     {
         for piece in pieces
         {
-            piece.deleteRow(row, grid: grid)
+            piece.deleteRow(row, grid: gameGrid)
         }
     }
     
@@ -258,14 +279,27 @@ class TetrisGame
         updateGameGrid()
     }
     
-    // Updates gameGrid to include new piece
+    // Updates gameGrid to reflect new pieces and old ones
     func updateGameGrid()
     {
+        // Shake the etch-a-sketch
+        resetGameGrid(firstRun: false)
+        
+        /*// Incorporate active piece
         if let unwrappedActivePiece = activePiece
         {
             for index in unwrappedActivePiece.getIndeces()
             {
                 gameGrid[index[0]][index[1]] = unwrappedActivePiece.getType()
+            }
+        } */
+        
+        // Incorporate pieces
+        for piece in pieces
+        {
+            for square in piece.getSquares()
+            {
+                gameGrid[square.getRowIndex()][square.getColumnIndex()] = square.getType()
             }
         }
     }
@@ -547,12 +581,9 @@ class TetrisPiece
         }
         
         // Delete them from the pieces.
-        if indecesToDelete.count > 0
+        for i in indecesToDelete.reversed()
         {
-            for i in indecesToDelete.count-1...0
-            {
-                squares.remove(at: indecesToDelete[i])
-            }
+                squares.remove(at: i)
         }
     }
     

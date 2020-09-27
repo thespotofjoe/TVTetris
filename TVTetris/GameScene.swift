@@ -271,7 +271,7 @@ extension GameScene {
         {[unowned self] _,_,pressed in
             if pressed
             {
-                self.game.resetGameGrid(firstRun: false)
+                self.game.resetGame(firstRun: false)
                 self.displayGrid()
                 // Rotate the tile
                 
